@@ -1,225 +1,145 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
+  CircularProgress,
+  Alert,
   TextField,
-  Checkbox,
   FormControlLabel,
-  Radio,
-  RadioGroup,
-  FormControl,
-  FormLabel,
+  Checkbox,
   Switch,
-  Slider,
-  Typography,
+  RadioGroup,
+  Radio,
+  FormLabel,
+  FormControl,
   Select,
   MenuItem,
+  Slider,
+  Typography,
 } from "@mui/material";
 
-const formData = {
-  forms: [
-    {
-      rows: [
-        {
-          label: "First Name",
-          component: {
-            type: "TextField",
-            props: { variant: "outlined", fullWidth: true },
-          },
-        },
-        {
-          label: "Last Name",
-          component: {
-            type: "TextField",
-            props: { variant: "outlined", fullWidth: true },
-          },
-        },
-        {
-          label: "Gender",
-          component: {
-            type: "RadioGroup",
-            options: [
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other", value: "other" },
-            ],
-          },
-        },
-        {
-          label: "Newsletter Subscription",
-          component: { type: "Switch" },
-        },
-      ],
-    },
-    {
-      rows: [
-        {
-          label: "Email Address",
-          component: {
-            type: "TextField",
-            props: { variant: "outlined", fullWidth: true },
-          },
-        },
-        {
-          label: "Password",
-          component: {
-            type: "TextField",
-            props: { variant: "outlined", fullWidth: true, type: "password" },
-          },
-        },
-        {
-          label: "Remember Me",
-          component: { type: "Checkbox" },
-        },
-        {
-          label: "Age",
-          component: {
-            type: "Slider",
-            props: {
-              defaultValue: 25,
-              step: 5,
-              min: 18,
-              max: 100,
-              valueLabelDisplay: "auto",
-            },
-          },
-        },
-      ],
-    },
-    {
-      rows: [
-        {
-          label: "Country",
-          component: {
-            type: "Select",
-            options: [
-              { label: "USA", value: "USA" },
-              { label: "Canada", value: "Canada" },
-              { label: "Mexico", value: "Mexico" },
-            ],
-          },
-        },
-        {
-          label: "City",
-          component: {
-            type: "TextField",
-            props: { variant: "outlined", fullWidth: true },
-          },
-        },
-        {
-          label: "Address",
-          component: {
-            type: "TextField",
-            props: { variant: "outlined", fullWidth: true },
-          },
-        },
-      ],
-    },
-    {
-      rows: [
-        {
-          label: "Feedback",
-          component: {
-            type: "TextField",
-            props: {
-              variant: "outlined",
-              fullWidth: true,
-              multiline: true,
-              rows: 4,
-            },
-          },
-        },
-        {
-          label: "How did you hear about us?",
-          component: {
-            type: "Select",
-            options: [
-              { label: "Online", value: "online" },
-              { label: "Friend", value: "friend" },
-              { label: "Advertisement", value: "advertisement" },
-            ],
-          },
-        },
-        {
-          label: "Terms and Conditions",
-          component: { type: "Checkbox" },
-        },
-      ],
-    },
-  ],
-};
-
-function renderComponent(row, index) {
-  switch (row.component.type) {
-    case "TextField":
-      return (
-        <TextField key={index} label={row.label} {...row.component.props} />
-      );
-    case "Checkbox":
-      return (
-        <FormControlLabel
-          key={index}
-          control={<Checkbox />}
-          label={row.label}
-        />
-      );
-    case "Switch":
-      return (
-        <FormControlLabel key={index} control={<Switch />} label={row.label} />
-      );
-    case "Select":
-      return (
-        <TextField
-          key={index}
-          select
-          label={row.label}
-          fullWidth
-          variant="outlined"
-        >
-          {row.component.options.map((option, idx) => (
-            <MenuItem key={idx} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-      );
-    case "Slider":
-      return (
-        <Box key={index} width="100%" maxWidth={300}>
-          <Typography gutterBottom>{row.label}</Typography>
-          <Slider {...row.component.props} />
-        </Box>
-      );
-    case "RadioGroup":
-      return (
-        <FormControl key={index} component="fieldset">
-          <FormLabel component="legend">{row.label}</FormLabel>
-          <RadioGroup row>
-            {row.component.options.map((option, idx) => (
-              <FormControlLabel
-                key={idx}
-                value={option.value}
-                control={<Radio />}
-                label={option.label}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      );
-    default:
-      return null;
-  }
-}
-
 export default function App() {
+  const [formData, setFormData] = useState([]);
   const [currentFormIndex, setCurrentFormIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleNext = () =>
-    setCurrentFormIndex((prevIndex) =>
-      Math.min(prevIndex + 1, formData.forms.length - 1),
+  useEffect(() => {
+    fetch("https://8x2nxg-8080.csb.app") // Ensure this URL is correct and the server is properly configured for CORS
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.dir(data);
+        setFormData(data); // Assuming the data is the array of forms directly
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setError(error.toString());
+        setIsLoading(false);
+      });
+  }, []);
+
+  function renderComponent(row, index) {
+    switch (row.componentType) {
+      case "TextField":
+        return (
+          <TextField
+            key={index}
+            label={row.label}
+            required={row.isRequired}
+            variant="outlined"
+            fullWidth
+          />
+        );
+      case "Checkbox":
+        return (
+          <FormControlLabel
+            key={index}
+            control={<Checkbox />}
+            label={row.label}
+          />
+        );
+      case "Switch":
+        return (
+          <FormControlLabel
+            key={index}
+            control={<Switch />}
+            label={row.label}
+          />
+        );
+      case "RadioGroup":
+        return (
+          <FormControl component="fieldset" key={index}>
+            <FormLabel component="legend">{row.label}</FormLabel>
+            <RadioGroup row>
+              {row.options.map((option, idx) => (
+                <FormControlLabel
+                  key={idx}
+                  value={option}
+                  control={<Radio />}
+                  label={option}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+        );
+      case "Select":
+        return (
+          <TextField
+            key={index}
+            select
+            label={row.label}
+            fullWidth
+            variant="outlined"
+          >
+            {row.options.map((option, idx) => (
+              <MenuItem key={idx} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        );
+      case "Slider":
+        return (
+          <Box key={index} width="100%" maxWidth={300}>
+            <Typography gutterBottom>{row.label}</Typography>
+            <Slider
+              defaultValue={row.min}
+              step={row.step}
+              min={row.min}
+              max={row.max}
+              marks
+              valueLabelDisplay="auto"
+            />
+          </Box>
+        );
+      default:
+        return null;
+    }
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
-  const handleBack = () =>
-    setCurrentFormIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  }
 
   return (
     <Box
@@ -231,19 +151,26 @@ export default function App() {
         margin: 2,
       }}
     >
-      {formData.forms[currentFormIndex].rows.map(renderComponent)}
+      {formData[currentFormIndex] &&
+        formData[currentFormIndex].rows.map(renderComponent)}
       <Box sx={{ display: "flex", gap: 2 }}>
         <Button
           variant="outlined"
-          onClick={handleBack}
+          onClick={() =>
+            setCurrentFormIndex((prevIndex) => Math.max(prevIndex - 1, 0))
+          }
           disabled={currentFormIndex === 0}
         >
           Back
         </Button>
         <Button
           variant="contained"
-          onClick={handleNext}
-          disabled={currentFormIndex >= formData.forms.length - 1}
+          onClick={() =>
+            setCurrentFormIndex((prevIndex) =>
+              Math.min(prevIndex + 1, formData.length - 1),
+            )
+          }
+          disabled={currentFormIndex >= formData.length - 1}
         >
           Next
         </Button>

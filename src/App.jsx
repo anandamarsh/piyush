@@ -25,7 +25,7 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("https://kxlgqs-8080.csb.app") // Ensure this URL is correct and the server is properly configured for CORS
+    fetch("https://8x2nxg-8080.csb.app") // Ensure this URL is correct and the server is properly configured for CORS
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
